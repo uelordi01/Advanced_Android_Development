@@ -15,8 +15,11 @@
  */
 package com.example.android.sunshine.app;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -37,6 +40,8 @@ import android.widget.TextView;
 import com.example.android.sunshine.app.data.WeatherContract;
 import com.example.android.sunshine.app.sync.SunshineSyncAdapter;
 
+import org.w3c.dom.Text;
+
 /**
  * Encapsulates fetching the forecast and displaying it as a {@link ListView} layout.
  */
@@ -47,6 +52,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     private ListView mListView;
     private int mPosition = ListView.INVALID_POSITION;
     private boolean mUseTodayLayout;
+    Context mContext;
 
     private static final String SELECTED_KEY = "selected_position";
 
@@ -257,7 +263,16 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             mListView.smoothScrollToPosition(mPosition);
         }
     }
+    public void updateEmptyView() {
+        if(mForecastAdapter.getCount() == 0) {
+            if(!Utility.isOnline(getActivity().getApplicationContext()))
+            {
+                TextView no_internt = (TextView) getActivity().findViewById(R.id.tv_empty_list_no_internet);
+                mListView.setEmptyView(no_internt);
+            }
+        }
 
+    }
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         mForecastAdapter.swapCursor(null);
@@ -269,4 +284,5 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             mForecastAdapter.setUseTodayLayout(mUseTodayLayout);
         }
     }
+
 }

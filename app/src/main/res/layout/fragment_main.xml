@@ -29,7 +29,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center_horizontal"
-
         tools:text="@string/empty_weather_list"
+        android:text="@string/empty_weather_list" />
+    <TextView
+        android:id ="@+id/tv_empty_list_no_internet"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal"
+        tools:text="@string/empty_weather_list_no_internet"
         android:text="@string/empty_weather_list" />
 </FrameLayout>
