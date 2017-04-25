@@ -56,7 +56,13 @@
     <!-- Strings for formatting weather-related data -->
     <!--empty list errors -->
     <string name="empty_weather_list">No weather information available</string>
-    <string name="empty_weather_list_no_internet">No weather information available, No internetConnection</string>
+    <string name="empty_forecast_list_server_down">No weather information available.
+        The server is not returning data.</string>
+    <string name="empty_forecast_list_server_error">No weather information available. The server
+        is not returning valid data. Please check for an updated version of Sunshine</string>
+
+    <string name="empty_weather_list_no_internet">No weather information available,
+        No internetConnection</string>
     <!-- Label for the temperature units preference [CHAR LIMIT=30] -->
     <string name="pref_units_label">Temperature Units</string>
 
@@ -74,6 +80,7 @@
 
     <!-- Value in SharedPreferences for imperial temperature unit option [CHAR LIMIT=NONE] -->
     <string name="pref_units_imperial" translatable="false">imperial</string>
+    <string name="pref_location_status_key">loc-status</string>
 
 
     <!-- Language-specific constants -->
@@ -110,5 +117,6 @@
 
     <!-- Strings related to Notification preference -->
     <string name="pref_last_notification">last_notification</string>
+
 
 </resources>

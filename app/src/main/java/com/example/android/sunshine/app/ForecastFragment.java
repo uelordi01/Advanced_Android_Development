@@ -17,11 +17,13 @@ package com.example.android.sunshine.app;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -42,10 +44,16 @@ import com.example.android.sunshine.app.sync.SunshineSyncAdapter;
 
 import org.w3c.dom.Text;
 
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.PreferencesFactory;
+
 /**
  * Encapsulates fetching the forecast and displaying it as a {@link ListView} layout.
  */
-public class ForecastFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class ForecastFragment extends Fragment implements
+        LoaderManager.LoaderCallbacks<Cursor>,
+        SharedPreferences.OnSharedPreferenceChangeListener
+{
     public static final String LOG_TAG = ForecastFragment.class.getSimpleName();
     private ForecastAdapter mForecastAdapter;
 
@@ -89,11 +97,19 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     static final int COL_COORD_LAT = 7;
     static final int COL_COORD_LONG = 8;
 
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+        if(s.equals(getString(R.string.pref_location_status_key))) {
+            updateEmptyView();
+        }
+    }
+
     /**
      * A callback interface that all activities containing this fragment must
      * implement. This mechanism allows activities to be notified of item
      * selections.
      */
+
     public interface Callback {
         /**
          * DetailFragmentCallback for when an item has been selected.
@@ -114,6 +130,20 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.forecastfragment, menu);
+    }
+
+    @Override
+    public void onResume() {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
+        sp.registerOnSharedPreferenceChangeListener(this);
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
+        sp.unregisterOnSharedPreferenceChangeListener(this);
+        super.onPause();
     }
 
     @Override
@@ -262,14 +292,27 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             // to, do so now.
             mListView.smoothScrollToPosition(mPosition);
         }
+        updateEmptyView();
     }
     public void updateEmptyView() {
         if(mForecastAdapter.getCount() == 0) {
-            if(!Utility.isOnline(getActivity().getApplicationContext()))
-            {
-                TextView no_internt = (TextView) getActivity().findViewById(R.id.tv_empty_list_no_internet);
-                mListView.setEmptyView(no_internt);
+            int message = R.string.empty_weather_list;
+            TextView tvEmptyView = (TextView) getActivity().findViewById(R.id.tv_empty_list);
+            @SunshineSyncAdapter.LocationStatus int status = Utility.getLocationStatus(getActivity().getApplicationContext());
+            switch (status) {
+                case SunshineSyncAdapter.LOCATION_STATUS_SERVER_DOWN:
+                    message = R.string.empty_forecast_list_server_down;
+                    break;
+                case SunshineSyncAdapter.LOCATION_STATUS_SERVER_INVALID:
+                    message = R.string.empty_forecast_list_server_error;
+                    break;
+                default:
+                    if(!Utility.isOnline(getActivity())){
+                        message = R.string.empty_weather_list_no_internet;
+                    }
+
             }
+            tvEmptyView.setText(message);
         }
 
     }
