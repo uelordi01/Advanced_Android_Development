@@ -99,6 +99,7 @@ public class ForecastFragment extends Fragment implements
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+
         if(s.equals(getString(R.string.pref_location_status_key))) {
             updateEmptyView();
         }
@@ -306,6 +307,9 @@ public class ForecastFragment extends Fragment implements
                 case SunshineSyncAdapter.LOCATION_STATUS_SERVER_INVALID:
                     message = R.string.empty_forecast_list_server_error;
                     break;
+                case SunshineSyncAdapter.LOCATION_STATUS_INVALID
+                //case SunshineSyncAdapter.LOCATION_STATUS_UNKNOWN:
+
                 default:
                     if(!Utility.isOnline(getActivity())){
                         message = R.string.empty_weather_list_no_internet;

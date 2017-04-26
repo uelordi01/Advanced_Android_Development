@@ -75,9 +75,14 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     public static final int LOCATION_STATUS_SERVER_DOWN = 1;
     public static final int LOCATION_STATUS_SERVER_INVALID = 2;
     public static final int LOCATION_STATUS_UNKNOWN = 3;
+    public static final int LOCATION_STATUS_INVALID = 4;
 
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef ({LOCATION_STATUS_OK, LOCATION_STATUS_SERVER_DOWN, LOCATION_STATUS_SERVER_INVALID, LOCATION_STATUS_UNKNOWN})
+    @IntDef ({LOCATION_STATUS_OK,
+              LOCATION_STATUS_SERVER_DOWN,
+              LOCATION_STATUS_SERVER_INVALID,
+              LOCATION_STATUS_UNKNOWN,
+              LOCATION_STATUS_INVALID})
     public @interface LocationStatus{}
 
     public SunshineSyncAdapter(Context context, boolean autoInitialize) {
@@ -219,11 +224,25 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
         final String OWM_WEATHER = "weather";
         final String OWM_DESCRIPTION = "main";
         final String OWM_WEATHER_ID = "id";
+        final String OWN_MESSAGE_CODE = "cod";
 
         try {
             JSONObject forecastJson = new JSONObject(forecastJsonStr);
             JSONArray weatherArray = forecastJson.getJSONArray(OWM_LIST);
+            if(forecastJson.has(OWN_MESSAGE_CODE)) {
+                int error =forecastJson.getInt(OWN_MESSAGE_CODE);
+                switch (error) {
+                    case HttpURLConnection.HTTP_OK:
+                        break;
+                    case HttpURLConnection.HTTP_NOT_FOUND:
+                        setLocationStatus(getContext(),LOCATION_STATUS_UNKNOWN);
+                        break;
+                    default:
 
+                        setLocationStatus(getContext(),LOCATION_STATUS_SERVER_DOWN);
+                }
+
+            }
             JSONObject cityJson = forecastJson.getJSONObject(OWM_CITY);
             String cityName = cityJson.getString(OWM_CITY_NAME);
 
@@ -329,6 +348,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
         }
+        return true;
     }
 
     private void notifyWeather() {
