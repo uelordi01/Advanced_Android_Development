@@ -16,18 +16,28 @@
 package com.example.android.sunshine.app;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.example.android.sunshine.app.gcm.RegistrationIntentService;
 import com.example.android.sunshine.app.sync.SunshineSyncAdapter;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+
 
 public class MainActivity extends ActionBarActivity implements ForecastFragment.Callback {
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
+    private static final String TAG = "MainActivity";
+    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+    public static final String SENT_TOKEN_TO_SERVER = "sentTokenToServer";
 
     private boolean mTwoPane;
     private String mLocation;
@@ -35,6 +45,18 @@ public class MainActivity extends ActionBarActivity implements ForecastFragment.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (checkGooglePlayServices()) {
+            //Log.e(TAG,"Google play services not installed");
+            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+            boolean sentToken = sp.getBoolean(SENT_TOKEN_TO_SERVER,false);
+            if (!sentToken) {
+                Intent intent = new Intent(this, RegistrationIntentService.class);
+                startService(intent);
+            }
+        }
+
+
         mLocation = Utility.getPreferredLocation(this);
 
         setContentView(R.layout.activity_main);
@@ -124,5 +146,19 @@ public class MainActivity extends ActionBarActivity implements ForecastFragment.
                     .setData(contentUri);
             startActivity(intent);
         }
+    }
+    public boolean checkGooglePlayServices() {
+        GoogleApiAvailability gaa = GoogleApiAvailability.getInstance();
+        int result = gaa.isGooglePlayServicesAvailable(this);
+        if (result != ConnectionResult.SUCCESS) {
+            if (gaa.isUserResolvableError(result)) {
+                gaa.getErrorDialog(this,result,PLAY_SERVICES_RESOLUTION_REQUEST).show();
+            } else {
+                Log.e(TAG,"Google play services not installed");
+                finish();
+            }
+            return false;
+        }
+        return true;
     }
 }
