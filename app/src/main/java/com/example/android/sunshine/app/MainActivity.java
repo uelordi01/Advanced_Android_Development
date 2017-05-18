@@ -45,18 +45,6 @@ public class MainActivity extends ActionBarActivity implements ForecastFragment.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if (checkGooglePlayServices()) {
-            //Log.e(TAG,"Google play services not installed");
-            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-            boolean sentToken = sp.getBoolean(SENT_TOKEN_TO_SERVER,false);
-            if (!sentToken) {
-                Intent intent = new Intent(this, RegistrationIntentService.class);
-                startService(intent);
-            }
-        }
-
-
         mLocation = Utility.getPreferredLocation(this);
 
         setContentView(R.layout.activity_main);
@@ -83,6 +71,15 @@ public class MainActivity extends ActionBarActivity implements ForecastFragment.
         forecastFragment.setUseTodayLayout(!mTwoPane);
 
         SunshineSyncAdapter.initializeSyncAdapter(this);
+        if (checkGooglePlayServices()) {
+            //Log.e(TAG,"Google play services not installed");
+            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+            boolean sentToken = sp.getBoolean(SENT_TOKEN_TO_SERVER,false);
+            if (!sentToken) {
+                Intent intent = new Intent(this, RegistrationIntentService.class);
+                startService(intent);
+            }
+        }
     }
 
     @Override
